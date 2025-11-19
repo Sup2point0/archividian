@@ -1,6 +1,5 @@
 use std::{
     fmt::Debug,
-    path,
     time,
 };
 
@@ -19,8 +18,15 @@ impl ArchivedFile
 {
     pub fn from(entry: walkdir::DirEntry, config: &Config) -> anyhow::Result<ArchivedFile>
     {
-        let name = entry.file_name().to_string_lossy().to_string();
-        let path_rel = entry.path().strip_prefix(&config.root_dir)?.to_string_lossy().to_string();
+        let name =
+            entry.file_name()
+            .to_string_lossy().to_string();
+
+        let path_rel =
+            entry.path()
+            .strip_prefix(config.root_dir.parent().unwrap_or(&config.root_dir))?
+            .to_string_lossy().to_string();
+        
         let date_created = entry.metadata()?.created()?;
 
         anyhow::Ok(

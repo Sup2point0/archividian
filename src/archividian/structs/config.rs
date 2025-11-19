@@ -3,6 +3,8 @@ use std::{
     path,
 };
 
+use chrono::prelude::*;
+
 
 const EXPORT_EXTENSION: &str = "txt";
 
@@ -21,22 +23,23 @@ impl Config
     {
         let cwd = env::current_dir()?;
 
-        Ok(Config {
-            root_dir: {
-                match args.get(1) {
-                    Some(route) => cwd.join(route),
-                    None        => cwd.clone()
-                }
-            },
-            export_to: {
-                (match args.get(2) {
-                    Some(route) => cwd.join(route),
-                    None        => cwd.join("export")
-                }
-                ).with_extension(EXPORT_EXTENSION)
-            },
+        let root_dir = {
+            match args.get(1) {
+                Some(route) => cwd.join(route),
+                None        => cwd.clone()
+            }
+        };
+        let export_to = {
+            (match args.get(2) {
+                Some(route) => cwd.join(route),
+                None        => cwd.join(format!("archivist--{}", Utc::now().format("%Y-%m-%d--%H%M")))
+            }
+            ).with_extension(EXPORT_EXTENSION)
+        };
+        let include_dotdirs = args.contains(&"--include-dotdirs".to_string());
 
-            include_dotdirs: args.contains(&"--include-dotdirs".to_string()),
-        })
+        Ok(
+            Config { root_dir, export_to, include_dotdirs }
+        )
     }
 }
