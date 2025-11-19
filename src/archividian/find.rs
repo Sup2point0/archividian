@@ -25,7 +25,7 @@ fn is_autogen(name: &str) -> bool
 {
     [
         ".git",
-        "__pycache__", "node_modules", "target", "dist_newstyle"
+        "__pycache__", "node_modules", "target", "dist-newstyle"
     ].contains(&name)
 }
 

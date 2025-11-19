@@ -32,7 +32,7 @@ impl Config
         let export_to = {
             (match args.get(2) {
                 Some(route) => cwd.join(route),
-                None        => cwd.join(format!("archivist--{}", Utc::now().format("%Y-%m-%d--%H%M")))
+                None        => cwd.join(format!("archividian--{}", Utc::now().format("%Y-%m-%d--%H%M")))
             }
             ).with_extension(EXPORT_EXTENSION)
         };
