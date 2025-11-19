@@ -1,3 +1,5 @@
+use std::fs;
+
 use crate::*;
 
 
@@ -25,8 +27,10 @@ impl ArchiveData
             .join("\n")
     }
 
-    pub fn export_to_file(&self, _config: &Config) -> anyhow::Result<()>
+    pub fn export_to_file(&self, config: &Config) -> anyhow::Result<()>
     {
-        unimplemented!()
+        let load = self.export_to_text(&config);
+        let out = fs::write(&config.export_to, load.as_bytes());
+        Ok(out?)
     }
 }

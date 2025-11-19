@@ -9,7 +9,7 @@ const EXPORT_EXTENSION: &str = "txt";
 #[derive(Debug)]
 pub struct Config
 {
-    pub root: path::PathBuf,
+    pub root_dir: path::PathBuf,
     pub export_to: path::PathBuf,
 
     pub include_dotdirs: bool,
@@ -22,7 +22,7 @@ impl Config
         let cwd = env::current_dir()?;
 
         Ok(Config {
-            root: {
+            root_dir: {
                 match args.get(1) {
                     Some(route) => cwd.join(route),
                     None        => cwd.clone()

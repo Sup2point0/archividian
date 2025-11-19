@@ -3,7 +3,7 @@ use crate::*;
 
 pub fn find_files(config: &Config) -> impl Iterator<Item = walkdir::DirEntry>
 {
-    walkdir::WalkDir::new(&config.root)
+    walkdir::WalkDir::new(&config.root_dir)
         .into_iter()
         .filter_entry(|e| config.include_dotdirs || !is_dotdir(e))
         .filter_map(Result::ok)

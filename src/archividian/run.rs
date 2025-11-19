@@ -9,14 +9,13 @@ pub fn run(args: Vec<String>) -> anyhow::Result<()>
     
     let files: Vec<ArchivedFile> =
         found
-        .map(ArchivedFile::from)
+        .map(|f| ArchivedFile::from(f, &config))
         .filter_map(anyhow::Result::ok)
         .collect()
     ;
 
     let archive = ArchiveData::of(files.into_iter());
-    println!("{}", archive.export_to_text(&config));
-    // archive.export_to_file(&config)
+    archive.export_to_file(&config)?;
 
     Ok(())
 }
