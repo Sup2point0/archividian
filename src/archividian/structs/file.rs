@@ -22,6 +22,10 @@ impl ArchivedFile
 
     pub fn export_oneline(&self, _config: &Config) -> String
     {
-        unimplemented!()
+        format!(
+            "{} -- {}",
+            self.name,
+            self.date_created.duration_since(time::SystemTime::UNIX_EPOCH).unwrap_or_default().as_secs().to_string()
+        )
     }
 }

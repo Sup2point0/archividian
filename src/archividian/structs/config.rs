@@ -11,6 +11,8 @@ pub struct Config
 {
     pub root: path::PathBuf,
     pub export_to: path::PathBuf,
+
+    pub include_dotdirs: bool,
 }
 
 impl Config
@@ -21,18 +23,20 @@ impl Config
 
         Ok(Config {
             root: {
-                match args.get(0) {
+                match args.get(1) {
                     Some(route) => cwd.join(route),
                     None        => cwd.clone()
                 }
             },
             export_to: {
-                (match args.get(1) {
+                (match args.get(2) {
                     Some(route) => cwd.join(route),
                     None        => cwd.join("export")
                 }
-                ).join(EXPORT_EXTENSION)
-            }
+                ).with_extension(EXPORT_EXTENSION)
+            },
+
+            include_dotdirs: args.contains(&"--include-dotdirs".to_string()),
         })
     }
 }
