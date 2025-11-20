@@ -17,20 +17,20 @@ impl ArchiveData
         }
     }
 
-    pub fn export_to_text(&self, config: &Config) -> String
+    pub fn export_to_text(&self, cli: &Cli) -> String
     {
         self.files
             .clone()
             .into_iter()
-            .map(|file| file.export_oneline(&config))
+            .map(|file| file.export_oneline(&cli))
             .collect::<Vec<String>>()
             .join("\n")
     }
 
-    pub fn export_to_file(&self, config: &Config) -> anyhow::Result<()>
+    pub fn export_to_file(&self, cli: &Cli) -> anyhow::Result<()>
     {
-        let load = self.export_to_text(&config);
-        let out = fs::write(&config.export_to, load.as_bytes());
+        let load = self.export_to_text(&cli);
+        let out = fs::write(&cli.export_to, load.as_bytes());
         Ok(out?)
     }
 }

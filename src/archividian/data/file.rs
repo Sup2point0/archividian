@@ -16,7 +16,7 @@ pub struct ArchivedFile
 
 impl ArchivedFile
 {
-    pub fn from(entry: walkdir::DirEntry, config: &Config) -> anyhow::Result<ArchivedFile>
+    pub fn from(entry: walkdir::DirEntry, cli: &Cli) -> anyhow::Result<ArchivedFile>
     {
         let name =
             entry.file_name()
@@ -24,7 +24,7 @@ impl ArchivedFile
 
         let path_rel =
             entry.path()
-            .strip_prefix(config.root_dir.parent().unwrap_or(&config.root_dir))?
+            .strip_prefix(cli.root_dir.parent().unwrap_or(&cli.root_dir))?
             .to_string_lossy().to_string();
         
         let date_created = entry.metadata()?.created()?;
@@ -34,7 +34,7 @@ impl ArchivedFile
         )
     }
 
-    pub fn export_oneline(&self, _config: &Config) -> String
+    pub fn export_oneline(&self, _cli: &Cli) -> String
     {
         format!(
             "{} -- {}",

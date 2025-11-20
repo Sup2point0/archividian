@@ -1,16 +1,11 @@
-use std::{
-    env,
-};
-
-use archividian;
+use archividian as arv;
 
 
 fn main()
 {
     println!("Running archividian");
 
-    let args: Vec<String> = env::args().collect();
-    let out = archividian::run(args);
+    let out = arv::run();
 
     match out {
         Err(_) => println!("ERROR!"),

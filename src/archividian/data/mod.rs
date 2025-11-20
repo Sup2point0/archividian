@@ -1,6 +1,3 @@
-mod config;
-pub use config::Config;
-
 mod file;
 pub use file::ArchivedFile;
 

@@ -1,21 +1,23 @@
 use crate::*;
 
+use clap::Parser;
 
-pub fn run(args: Vec<String>) -> anyhow::Result<()>
+
+pub fn run() -> anyhow::Result<()>
 {
-    let config = Config::from_args(args)?;
+    let cli = Cli::parse();
 
-    let found = archividian::find_files(&config);
+    let found = walk::find_files(&cli);
     
     let files: Vec<ArchivedFile> =
         found
-        .map(|f| ArchivedFile::from(f, &config))
+        .map(|f| ArchivedFile::from(f, &cli))
         .filter_map(anyhow::Result::ok)
         .collect()
     ;
 
     let archive = ArchiveData::of(files.into_iter());
-    archive.export_to_file(&config)?;
+    archive.export_to_file(&cli)?;
 
     Ok(())
 }

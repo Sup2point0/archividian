@@ -1,8 +1,10 @@
-mod structs;
-pub use structs::*;
+mod data;
+pub use data::*;
 
-mod walk;
-pub use walk::*;
+mod cli;
+pub use cli::Cli;
 
 mod run;
 pub use run::run;
+
+pub mod walk;

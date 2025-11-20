@@ -1,20 +1,20 @@
 use crate::*;
 
 
-pub fn find_files(config: &Config) -> impl Iterator<Item = walkdir::DirEntry>
+pub fn find_files(cli: &Cli) -> impl Iterator<Item = walkdir::DirEntry>
 {
-    walkdir::WalkDir::new(&config.root_dir)
+    walkdir::WalkDir::new(&cli.root_dir)
         .into_iter()
-        .filter_entry(|e| check_dir(e, config))
+        .filter_entry(|e| check_dir(e, cli))
         .filter_map(Result::ok)
 }
 
 
-fn check_dir(entry: &walkdir::DirEntry, config: &Config) -> bool
+fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
 {
     if let Some(name) = entry.file_name().to_str() {
         !is_autogen(name)
-        && (config.include_dotdirs || !is_dotdir(name))
+        && (cli.include_dotdirs || !is_dotdir(name))
     }
     else {
         false
