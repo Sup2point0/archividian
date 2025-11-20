@@ -19,12 +19,25 @@ impl ArchiveData
 
     pub fn export_to_text(&self, cli: &Cli) -> String
     {
-        self.files
+        let file_data = self.files
             .clone()
             .into_iter()
             .map(|file| file.export_oneline(&cli))
-            .collect::<Vec<String>>()
-            .join("\n")
+            .collect::<Vec<String>>();
+
+        format!(
+"# Archividian Export
+
+Exported on **{}**
+**{}** files archived
+
+| Created    | Modified   | Path |
+| :--------- | :--------- | :--- |
+",
+            chrono::Utc::now().format("%Y %B %d at %H:%M.%S UTC"),
+            file_data.len(),
+        )
+            .to_string() + &file_data.join("\n")
     }
 
     pub fn export_to_file(&self, cli: &Cli) -> anyhow::Result<()>

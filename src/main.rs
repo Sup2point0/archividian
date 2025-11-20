@@ -8,7 +8,7 @@ fn main()
     let out = arv::run();
 
     match out {
-        Err(_) => println!("ERROR!"),
+        Err(e) => println!("{:?}", e),
         Ok(_)  => println!("DONE!")
     }
 }

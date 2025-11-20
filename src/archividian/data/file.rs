@@ -37,10 +37,9 @@ impl ArchivedFile
     pub fn export_oneline(&self, _cli: &Cli) -> String
     {
         format!(
-            "{} -- {} -- {}",
-            // self.date_created.duration_since(time::SystemTime::UNIX_EPOCH).unwrap_or_default().as_secs().to_string(),
+            "| {} | {} | `{}` |",
             self.date_created.format("%Y/%m/%d"),
-            self.date_created.format("%H:%M.%S"),
+            self.date_edited.format("%Y/%m/%d"),
             self.path_rel,
         )
     }
