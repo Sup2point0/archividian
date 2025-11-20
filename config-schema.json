@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json.schemastore.org/global",
+
+  "version": "0.1.0",
+  "title": "Archividian Configuration Schema",
+  "description": "Preset configurations for running Archividian",
+
+  "additionalProperties": false,
+
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+
+    "root-dir": {
+      "type": "array",
+      "items": "string"
+    },
+    "--export": {
+      "type": "string"
+    },
+    "--relative-to": {
+      "type": "string"
+    },
+    "--dotdirs": {
+      "type": "boolean",
+      "defaultSnippets": [
+        {"body": true},
+        {"body": false}
+      ]
+    },
+    "--default-ignore": {
+      "type": "boolean"
+    },
+    "ignore": {
+      "type": "array",
+      "items": "string"
+    }
+  }
+}

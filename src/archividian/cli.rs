@@ -1,23 +1,26 @@
 use std::{
     env,
+    fs,
     path::{self, PathBuf},
 };
 use chrono::prelude::*;
 
 use clap;
+use serde_json as json;
 
 
 #[derive(clap::Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli
 {
-    #[arg(value_parser = set_root, default_value = get_root().into_os_string(),
+    #[arg(value_parser = Self::set_root,
+        default_value = Self::get_root().into_os_string(),
         help = "Root directory from which to start finding files"
     )]
     pub root_dir: path::PathBuf,
 
     #[arg(short = 'o', long = "export",
-        default_value = get_export().into_os_string(),
+        default_value = Self::get_export().into_os_string(),
         help = "File path to export data to"
     )]
     pub export_to: path::PathBuf,
@@ -28,7 +31,7 @@ pub struct Cli
     pub config_file: Option<path::PathBuf>,
 
     #[arg(long = "relative-to",
-    default_value = get_rel().into_os_string(),
+        default_value = Self::get_rel().into_os_string(),
         help = "Base path which dirs are dispayed relative to"
     )]
     pub relative_to: path::PathBuf,
@@ -44,27 +47,85 @@ pub struct Cli
     pub default_ignore: bool,
 }
 
-fn get_root() -> path::PathBuf
+impl Cli
 {
-    env::current_dir().unwrap()
+    pub fn config(&mut self) -> anyhow::Result<()>
+    {
+        if let Some(path) = &self.config_file {
+            let data = Self::get_config(path.clone())?;
+            self.set_config(data);
+        }
+
+        Ok(())
+    }
+
+    pub fn get_config(path: path::PathBuf) -> anyhow::Result<json::Value>
+    {
+        let text = fs::read_to_string(path)?;
+        let data = json::from_str(&text)?;
+        Ok(data)
+    }
+
+    pub fn set_config(&mut self, data: json::Value) -> ()
+    {
+        if let json::Value::String(path) = data["root-dir"].clone() {
+            self.root_dir = if path.starts_with("C:") {
+                PathBuf::from(path)
+            } else {
+                self.root_dir.join(path)
+            }
+        }
+
+        if let json::Value::String(path) = data["--export"].clone() {
+            self.export_to = if path.starts_with("C:") {
+                PathBuf::from(path)
+            } else {
+                self.root_dir.join(path)
+            }
+        }
+
+        if let json::Value::String(path) = data["--relative-to"].clone() {
+            self.relative_to = if path.starts_with("C:") {
+                PathBuf::from(path)
+            } else {
+                self.root_dir.join(path)
+            }
+        }
+
+        if let json::Value::Bool(state) = data["--dotdirs"] {
+            self.include_dotdirs = state;
+        }
+
+        if let json::Value::Bool(state) = data["--default-ignore"] {
+            self.default_ignore = state;
+        }
+    }
 }
 
-fn set_root(s: &str) -> anyhow::Result<path::PathBuf>
+impl Cli
 {
-    Ok(env::current_dir()?.join(s))
-}
+    fn get_root() -> path::PathBuf
+    {
+        env::current_dir().unwrap()
+    }
 
-fn get_export() -> path::PathBuf
-{
-    let timestamp = format!("archividian--{}.md", Utc::now().format("%Y-%m-%d--%H%M"));
-    get_root().join(timestamp)
-}
+    fn set_root(s: &str) -> anyhow::Result<path::PathBuf>
+    {
+        Ok(env::current_dir()?.join(s))
+    }
 
-fn get_rel() -> path::PathBuf
-{
-    let root = get_root();
-    match root.parent() {
-        None => root,
-        Some(path) => PathBuf::from(path)
+    fn get_export() -> path::PathBuf
+    {
+        let timestamp = format!("archividian--{}.md", Utc::now().format("%Y-%m-%d--%H%M"));
+        Self::get_root().join(timestamp)
+    }
+
+    fn get_rel() -> path::PathBuf
+    {
+        let root = Self::get_root();
+        match root.parent() {
+            None => root,
+            Some(path) => PathBuf::from(path)
+        }
     }
 }

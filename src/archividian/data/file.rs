@@ -38,8 +38,8 @@ impl ArchivedFile
     {
         format!(
             "| {} | {} | `{}` |",
-            self.date_created.format("%Y/%m/%d"),
-            self.date_edited.format("%Y/%m/%d"),
+            self.date_created.format("%Y-%m-%d"),
+            self.date_edited.format("%Y-%m-%d"),
             self.path_rel,
         )
     }
