@@ -23,7 +23,7 @@ fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
 
 fn is_autogen(name: &str, cli: &Cli) -> bool
 {
-    cli.ignore.contains(&name.to_ascii_lowercase())
+    cli.ignore.iter().any(|pats| pats.is_match(name))
 }
 
 fn is_dotdir(name: &str) -> bool

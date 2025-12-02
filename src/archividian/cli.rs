@@ -1,10 +1,11 @@
 use std::{
-    collections::HashSet, env, fs, path::{self, PathBuf}
+    env, fs, path::{self, PathBuf}
 };
 use chrono::prelude::*;
 
 use clap;
 use serde_json as json;
+use regex::RegexSet;
 
 
 #[derive(clap::Parser)]
@@ -53,7 +54,7 @@ pub struct Cli
     pub default_ignore: bool,
 
     #[clap(skip)]
-    pub ignore: HashSet<String>,
+    pub ignore: Vec<RegexSet>,
 }
 
 impl Cli
@@ -66,17 +67,16 @@ impl Cli
         Ok(())
     }
 
-    fn set_defaults(&mut self)
+    fn set_defaults(&mut self) -> ()
     {
-        self.ignore = [
+        self.ignore = vec![
+            RegexSet::new([
                 "build", "cache",
                 ".git",
                 "__pycache__", "node_modules", "target", "dist-newstyle",
-                "PackageCache"
-            ]
-            .into_iter()
-            .map(String::from)
-            .collect()
+                "PackageCache",
+            ]).unwrap()
+        ];
     }
 
     pub fn config(&mut self) -> anyhow::Result<()>
@@ -131,8 +131,8 @@ impl Cli
         }
 
         if let json::Value::Array(patterns) = &data["ignore"] {
-            self.ignore = &self.ignore | (
-                &patterns
+            if let Ok(set) = RegexSet::new(
+                patterns
                     .iter()
                     .filter_map(
                         |pat| if let json::Value::String(val) = pat {
@@ -141,8 +141,10 @@ impl Cli
                             None
                         }
                     )
-                    .collect::<HashSet<String>>()
-            );
+                    .collect::<Vec<_>>()
+            ) {
+                self.ignore.push(set);
+            }
         }
     }
 }
