@@ -13,7 +13,7 @@ pub fn find_files(cli: &Cli) -> impl Iterator<Item = walkdir::DirEntry>
 fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
 {
     if let Some(name) = entry.file_name().to_str() {
-        !is_autogen(name)
+            !is_autogen(name, &cli)
         && (cli.include_dotdirs || !is_dotdir(name))
     }
     else {
@@ -21,12 +21,9 @@ fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
     }
 }
 
-fn is_autogen(name: &str) -> bool
+fn is_autogen(name: &str, cli: &Cli) -> bool
 {
-    [
-        ".git",
-        "__pycache__", "node_modules", "target", "dist-newstyle"
-    ].contains(&name)
+    cli.ignore.contains(&name.to_ascii_lowercase())
 }
 
 fn is_dotdir(name: &str) -> bool

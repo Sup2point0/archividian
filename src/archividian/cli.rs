@@ -13,38 +13,48 @@ use serde_json as json;
 #[command(version, about, long_about = None)]
 pub struct Cli
 {
-    #[arg(value_parser = Self::set_root,
+    #[arg(
+        value_parser = Self::set_root,
         default_value = Self::get_root().into_os_string(),
         help = "Root directory from which to start finding files"
     )]
     pub root_dir: path::PathBuf,
 
-    #[arg(short = 'o', long = "export",
+    pub scan_dirs: Vec<path::PathBuf>,
+
+    #[arg(
+        short = 'o', long = "export",
         default_value = Self::get_export().into_os_string(),
         help = "File path to export data to"
     )]
     pub export_to: path::PathBuf,
 
-    #[arg(short = 'c', long = "config",
+    #[arg(
+        short = 'c', long = "config",
         help = "Path to `arv.json` config file"
     )]
     pub config_file: Option<path::PathBuf>,
 
-    #[arg(long = "relative-to",
+    #[arg(
+        long = "relative-to",
         default_value = Self::get_rel().into_os_string(),
         help = "Base path which dirs are dispayed relative to"
     )]
     pub relative_to: path::PathBuf,
 
-    #[arg(short = 'd', long = "dotdirs",
+    #[arg(
+        short = 'd', long = "dotdirs",
         help = "Include dirs starting with `.` (`.github/`, `.vscode/`, etc.)"
     )]
     pub include_dotdirs: bool,
 
-    #[arg(long = "default-ignore",
+    #[arg(
+        long = "default-ignore",
         help = "Ignores a sensible default set of dirs (`.git/`, `node_modules/`, etc.)"
     )]
     pub default_ignore: bool,
+
+    pub(crate) ignore: Vec<String>,
 }
 
 impl Cli
@@ -53,7 +63,7 @@ impl Cli
     {
         if let Some(path) = &self.config_file {
             let data = Self::get_config(path.clone())?;
-            self.set_config(data);
+            self.set_from_config(data);
         }
 
         Ok(())
@@ -66,7 +76,7 @@ impl Cli
         Ok(data)
     }
 
-    pub fn set_config(&mut self, data: json::Value) -> ()
+    pub fn set_from_config(&mut self, data: json::Value) -> ()
     {
         if let json::Value::String(path) = data["root-dir"].clone() {
             self.root_dir = if path.starts_with("C:") {
@@ -98,6 +108,33 @@ impl Cli
 
         if let json::Value::Bool(state) = data["--default-ignore"] {
             self.default_ignore = state;
+        }
+
+        if let json::Value::Array(patterns) = &data["ignore"] {
+            self.ignore = [
+                (
+                    vec![
+                        "build", "cache",
+                        ".git",
+                        "__pycache__", "node_modules", "target", "dist-newstyle",
+                        "PackageCache"
+                    ]
+                    .into_iter()
+                    .map(String::from)
+                    .collect::<Vec<String>>()
+                ),
+                (
+                    patterns.iter()
+                        .filter_map(
+                            |pat| if let json::Value::String(val) = pat {
+                                Some(val.clone())
+                            } else {
+                                None
+                            }
+                        )
+                        .collect::<Vec<String>>()
+                )
+            ].concat();
         }
     }
 }
