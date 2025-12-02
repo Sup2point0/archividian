@@ -6,7 +6,7 @@ use clap::Parser;
 pub fn run() -> anyhow::Result<()>
 {
     let mut cli = Cli::parse();
-    cli.config()?;
+    cli.init()?;
 
     let found = walk::find_files(&cli);
     

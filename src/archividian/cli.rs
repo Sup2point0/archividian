@@ -31,7 +31,7 @@ pub struct Cli
 
     #[arg(
         short = 'c', long = "config",
-        help = "Path to `arv.json` config file"
+        help = "Path to JSON config file"
     )]
     pub config_file: Option<path::PathBuf>,
 
@@ -49,16 +49,38 @@ pub struct Cli
     pub include_dotdirs: bool,
 
     #[arg(
-        long = "default-ignore",
+        short = 'i', long = "default-ignore",
         help = "Ignores a sensible default set of dirs (`.git/`, `node_modules/`, etc.)"
     )]
     pub default_ignore: bool,
 
-    pub(crate) ignore: Vec<String>,
+    #[clap(skip)]
+    pub ignore: Vec<String>,
 }
 
 impl Cli
 {
+    pub fn init(&mut self) -> anyhow::Result<()>
+    {
+        self.set_defaults();
+        self.config()?;
+
+        Ok(())
+    }
+
+    fn set_defaults(&mut self)
+    {
+        self.ignore = vec![
+                "build", "cache",
+                ".git",
+                "__pycache__", "node_modules", "target", "dist-newstyle",
+                "PackageCache"
+            ]
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<String>>()
+    }
+
     pub fn config(&mut self) -> anyhow::Result<()>
     {
         if let Some(path) = &self.config_file {
@@ -69,14 +91,14 @@ impl Cli
         Ok(())
     }
 
-    pub fn get_config(path: path::PathBuf) -> anyhow::Result<json::Value>
+    fn get_config(path: path::PathBuf) -> anyhow::Result<json::Value>
     {
         let text = fs::read_to_string(path)?;
         let data = json::from_str(&text)?;
         Ok(data)
     }
 
-    pub fn set_from_config(&mut self, data: json::Value) -> ()
+    fn set_from_config(&mut self, data: json::Value) -> ()
     {
         if let json::Value::String(path) = data["root-dir"].clone() {
             self.root_dir = if path.starts_with("C:") {
@@ -111,31 +133,21 @@ impl Cli
         }
 
         if let json::Value::Array(patterns) = &data["ignore"] {
-            self.ignore = [
-                (
-                    vec![
-                        "build", "cache",
-                        ".git",
-                        "__pycache__", "node_modules", "target", "dist-newstyle",
-                        "PackageCache"
-                    ]
-                    .into_iter()
-                    .map(String::from)
+            self.ignore.append(
+                &mut patterns
+                    .iter()
+                    .filter_map(
+                        |pat| if let json::Value::String(val) = pat {
+                            Some(val.clone())
+                        } else {
+                            None
+                        }
+                    )
                     .collect::<Vec<String>>()
-                ),
-                (
-                    patterns.iter()
-                        .filter_map(
-                            |pat| if let json::Value::String(val) = pat {
-                                Some(val.clone())
-                            } else {
-                                None
-                            }
-                        )
-                        .collect::<Vec<String>>()
-                )
-            ].concat();
+            );
         }
+
+        println!("self.ignore = {:?}", self.ignore);
     }
 }
 
