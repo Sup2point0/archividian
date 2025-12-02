@@ -12,8 +12,10 @@ pub fn find_files(cli: &Cli) -> impl Iterator<Item = walkdir::DirEntry>
 
 fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
 {
-    if let Some(name) = entry.file_name().to_str() {
-            !is_autogen(name, &cli)
+    if let Some(path) = entry.path().to_str()
+        && let Some(name) = entry.file_name().to_str()
+    {
+        !is_autogen(path, &cli)
         && (cli.include_dotdirs || !is_dotdir(name))
     }
     else {
@@ -21,9 +23,9 @@ fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
     }
 }
 
-fn is_autogen(name: &str, cli: &Cli) -> bool
+fn is_autogen(path: &str, cli: &Cli) -> bool
 {
-    cli.ignore.iter().any(|pats| pats.is_match(name))
+    cli.ignore.iter().any(|regexes| regexes.is_match(path))
 }
 
 fn is_dotdir(name: &str) -> bool

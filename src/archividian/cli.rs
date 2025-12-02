@@ -73,7 +73,7 @@ impl Cli
             RegexSet::new([
                 "build", "cache",
                 ".git",
-                "__pycache__", "node_modules", "target", "dist-newstyle",
+                "__pycache__", "obj", "node_modules", "dist-newstyle", "target",
                 "PackageCache",
             ]).unwrap()
         ];
@@ -83,7 +83,7 @@ impl Cli
     {
         if let Some(path) = &self.config_file {
             let data = Self::get_config(path.clone())?;
-            self.set_from_config(data);
+            self.set_from_config(data)?;
         }
 
         Ok(())
@@ -96,7 +96,7 @@ impl Cli
         Ok(data)
     }
 
-    fn set_from_config(&mut self, data: json::Value) -> ()
+    fn set_from_config(&mut self, data: json::Value) -> anyhow::Result<()>
     {
         if let json::Value::String(path) = data["root-dir"].clone() {
             self.root_dir = if path.starts_with("C:") {
@@ -142,10 +142,16 @@ impl Cli
                         }
                     )
                     .collect::<Vec<_>>()
-            ) {
+                )
+            {
                 self.ignore.push(set);
             }
-        }
+            else {
+                return Err(anyhow::anyhow!("Invalid `ignore` patterns in config JSON"));
+            }
+        };
+
+        Ok(())
     }
 }
 
