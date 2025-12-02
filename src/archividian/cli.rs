@@ -1,7 +1,5 @@
 use std::{
-    env,
-    fs,
-    path::{self, PathBuf},
+    collections::HashSet, env, fs, path::{self, PathBuf}
 };
 use chrono::prelude::*;
 
@@ -55,7 +53,7 @@ pub struct Cli
     pub default_ignore: bool,
 
     #[clap(skip)]
-    pub ignore: Vec<String>,
+    pub ignore: HashSet<String>,
 }
 
 impl Cli
@@ -70,7 +68,7 @@ impl Cli
 
     fn set_defaults(&mut self)
     {
-        self.ignore = vec![
+        self.ignore = [
                 "build", "cache",
                 ".git",
                 "__pycache__", "node_modules", "target", "dist-newstyle",
@@ -78,7 +76,7 @@ impl Cli
             ]
             .into_iter()
             .map(String::from)
-            .collect::<Vec<String>>()
+            .collect()
     }
 
     pub fn config(&mut self) -> anyhow::Result<()>
@@ -133,8 +131,8 @@ impl Cli
         }
 
         if let json::Value::Array(patterns) = &data["ignore"] {
-            self.ignore.append(
-                &mut patterns
+            self.ignore = &self.ignore | (
+                &patterns
                     .iter()
                     .filter_map(
                         |pat| if let json::Value::String(val) = pat {
@@ -143,11 +141,9 @@ impl Cli
                             None
                         }
                     )
-                    .collect::<Vec<String>>()
+                    .collect::<HashSet<String>>()
             );
         }
-
-        println!("self.ignore = {:?}", self.ignore);
     }
 }
 
