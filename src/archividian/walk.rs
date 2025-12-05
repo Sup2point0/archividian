@@ -15,7 +15,7 @@ fn check_dir(entry: &walkdir::DirEntry, cli: &Cli) -> bool
     if let Some(path) = entry.path().to_str()
         && let Some(name) = entry.file_name().to_str()
     {
-        !is_autogen(path, &cli)
+        !is_autogen(&path.replace("\\", "/"), &cli)
         && (cli.include_dotdirs || !is_dotdir(name))
     }
     else {
