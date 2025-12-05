@@ -35,7 +35,7 @@ impl ArchivedFile
             "| {} | {} | `{}` |",
             self.date_created.format("%Y-%m-%d"),
             self.date_edited.format("%Y-%m-%d"),
-            self.path_rel,
+            self.path_rel.replace("\\", "/"),
         )
     }
 }
